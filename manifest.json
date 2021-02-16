@@ -1,0 +1,28 @@
+{
+  "name": "Cardcierge: A Credit Card Picker",
+  "description": "An extension that picks the optimal credit card to maximize rewards for online purchases",
+  "version": "1.0",
+  "manifest_version": 2,
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "windows",
+    "https://*/"
+  ],
+  "icons": {
+    "16": "/images/get_started16.png", // need to change these to our own icon 
+    "32": "/images/get_started32.png",
+    "48": "/images/get_started48.png",
+    "128": "/images/get_started128.png"
+  },
+  "background": {
+    "scripts": [
+      "./background.js"
+    ]
+  },
+  "options_page": "./options.html",
+  "browser_action": {
+    "default_popup": "./popup-sign-in.html"
+  }
+}
