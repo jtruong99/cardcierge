@@ -17,9 +17,9 @@ button.addEventListener('click', () => {
     function (response) {
         if (response === 'success') {
             chrome.browserAction.setPopup({
-                popup: './popup-sign-in.html'
+                popup: '/html/popup-sign-in.html'
             });
-           window.location.replace('./popup-sign-in.html');
+           window.location.replace('/html/popup-sign-in.html');
         }
     });
 });
@@ -28,6 +28,6 @@ button.addEventListener('click', () => {
 fill_button.addEventListener('click', () => {
     console.log("clicked fill");
     chrome.tabs.executeScript({
-        file: 'autofill.js'
+        file: '/background_js/autofill.js'
       }); 
 });

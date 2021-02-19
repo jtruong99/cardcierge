@@ -49,11 +49,11 @@ chrome.browserAction.onClicked.addListener(function () {
     .then(res => {
       if (res.userLoggedIn) {
         chrome.browserAction.setPopup({
-          popup: './popup-sign-out.html'
+          popup: '/html/popup-sign-out.html'
         });
       } else {
         chrome.browserAction.setPopup({
-          popup: './popup-sign-in.html'
+          popup: '/html/popup-sign-in.html'
         });
       }
     })

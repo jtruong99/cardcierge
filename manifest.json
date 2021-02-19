@@ -18,11 +18,12 @@
   },
   "background": {
     "scripts": [
-      "./background.js"
+      "/background_js/background.js"
     ]
   },
-  "options_page": "./options.html",
+  "options_page": "/html/options.html",
   "browser_action": {
-    "default_popup": "./popup-sign-in.html"
+    "default_popup": "/html/popup-sign-in.html"
   }
 }
+
