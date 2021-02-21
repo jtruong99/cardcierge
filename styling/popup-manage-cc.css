@@ -1,0 +1,10 @@
+/* Use these for custom css for page */
+body {
+    background-color: #f7f7f7;
+    min-height: 600px;
+    min-width: 600px;
+}
+
+.card-block {
+    min-height: 300px;
+}

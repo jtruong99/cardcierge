@@ -5,6 +5,9 @@ and runs in the background, listing for events (such as click on extension) */
 // link on the chrome extension manager
 console.log("Hello from the background page!");
 
+// base url for heroku 
+let base_url = "https://cardcierge.herokuapp.com/";
+
 // tells us whether the user is currently signed in
 let user_signed_in = false; 
 
@@ -41,24 +44,53 @@ function is_user_signed_in() {
   })
 }
 
-// when clicking on extension, this tells us what page to show 
-// this may actually not be necessary, as previous sessions may
-// set this - need to test this out 
-chrome.browserAction.onClicked.addListener(function () {
-  is_user_signed_in()
+function convert_payload(payload){
+  var formBody = [];
+  for (var property in payload) {
+    var encodedKey = encodeURIComponent(property);
+    var encodedValue = encodeURIComponent(payload[property]);
+    formBody.push(encodedKey + "=" + encodedValue);
+  }
+  formBody = formBody.join("&");
+  return formBody; 
+}
+
+/*
+makes an api call to a given url, assuming user is authenticated 
+*/
+function makeApiCall(endpoint, request_type, data){
+  return is_user_signed_in()
     .then(res => {
       if (res.userLoggedIn) {
-        chrome.browserAction.setPopup({
-          popup: '/html/popup-sign-out.html'
-        });
+        //user logged in 
+        var user_token = res.token;
+        return fetch(base_url+endpoint, {
+          method: request_type,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Token '+user_token,
+          },
+          body: data, 
+        })
+          .then(res => {
+            if (res.status >= 300){
+              return false; 
+            }else{
+              return res.json();
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          });
       } else {
-        chrome.browserAction.setPopup({
-          popup: '/html/popup-sign-in.html'
-        });
+        return false;
       }
     })
-    .catch(err => console.log(err));
-});
+    .catch(err => {
+      console.log(err)
+      return false;
+    });
+}
 
 /**
  * Attempts to register a user given email and password
@@ -207,6 +239,73 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(err => console.log(err));
     return true;
   }
+  else if (request.message === 'getCreditCards'){
+    makeApiCall("creditcards/","GET",null).then(res => {
+      var message = 'success';
+      if (res === false){
+        message = 'err';
+      }
+      user_cc = res
+      makeApiCall("credit_types/","GET",null).then(res => {
+        if (res === false){
+          message = 'err';
+        }
+        cc_types = res
+        sendResponse({
+          message: message,
+          user_cc: user_cc,
+          cc_types: cc_types,
+        });
+      })
+    })
+    .catch(err => console.log(err));
+    return true; 
+  }
+  else if (request.message === 'CreateCreditCard'){
+    var body_data = request.payload
+    delete body_data["card_id"]
+    body_data = convert_payload(body_data)
+    makeApiCall("creditcards/","POST",body_data).then(res => {
+      var message = 'success';
+      if (res === false){
+        message = 'err';
+      }
+      sendResponse({message: message,});
+    })
+    .catch(err => console.log(err));
+    return true; 
+  }
+  else if (request.message === 'UpdateCreditCard'){
+    var body_data = request.payload
+    card_id = body_data["card_id"]
+    delete body_data["card_id"]
+    body_data = convert_payload(body_data)
+    makeApiCall(`creditcards/${card_id}/`,"PATCH",body_data).then(res => {
+      var message = 'success';
+      if (res === false){
+        message = 'err';
+      }
+      sendResponse({message: message,});
+    })
+    .catch(err => {console.log(err)});
+    return true; 
+  }  
+  else if (request.message === 'DeleteCreditCard'){
+    var body_data = request.payload
+    card_id = body_data["card_id"]
+    delete body_data["card_id"]
+    body_data = convert_payload(body_data)
+    makeApiCall(`creditcards/${card_id}/`,"DELETE",body_data).then(res => {
+      var message = 'success';
+      if (res === false){
+        message = 'err';
+      }
+      sendResponse({message: message,});
+    })
+    .catch(err => console.log(err));
+    return true; 
+  }
+
 });
 
 
