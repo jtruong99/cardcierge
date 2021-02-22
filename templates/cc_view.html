@@ -1,0 +1,41 @@
+<div class="card card-block mx-2 px-2 py-2" style="min-width: 300px;">
+
+    <form id="${form_id}">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text">  Type </span>
+            </div>
+            <!-- TODO make this a title and toggle it -->
+            <select disabled id="${cc_type_field}" name="card_type" class="custom-select ${input_field_class}">
+            </select>
+        </div>
+
+        <input hidden value="${card_id}" name="card_id" type="text">
+       
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Num. </span>
+            </div>
+            <input readonly value="${card_num}" name="card_number" type="text" class="form-control ${input_field_class}">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Code </span>
+            </div>
+            <input readonly value="${card_code}" name="security_code" type="text" class="form-control ${input_field_class}">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Expir. </span>
+            </div>
+            <input readonly value="${expir}" name="expiration" type="text" class="form-control ${input_field_class}">
+        </div>
+
+    </form>
+
+    <button id="${but_create}" hidden type="submit" value="Create" class="btn btn-outline-success btn-lg"> Create Card </button>
+    <button id="${but_save}" hidden type="submit" value="Save" class="btn btn-outline-success"> Save </button>
+    <button id="${but_del}" hidden type="submit" value="Delete" class="btn btn-outline-danger"> Delete </button>
+    <button id="${but_edit}" type="button" class="btn btn-outline-warning">Edit </button>
+</div>
+

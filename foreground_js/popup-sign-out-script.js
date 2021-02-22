@@ -1,5 +1,6 @@
-const button = document.querySelector('button[type="submit"]');
-const fill_button = document.querySelector('button[type="button"]');
+const sign_out = document.getElementById('sign_out');
+const fill_button = document.getElementById('autofill');
+const manage_card_button = document.getElementById("mangage_card");
 
 chrome.runtime.sendMessage({ message: 'userStatus' },
     function (response) {
@@ -11,7 +12,16 @@ chrome.runtime.sendMessage({ message: 'userStatus' },
     }
 );
 
-button.addEventListener('click', () => {
+
+manage_card_button.addEventListener('click', () => {
+    console.log("Clicked Manage Card");
+    chrome.browserAction.setPopup({
+        popup: '/html/popup-manage-cc.html'
+    });
+    window.location.replace('/html/popup-manage-cc.html');  
+});
+
+sign_out.addEventListener('click', () => {
     console.log("clicked logout");
     chrome.runtime.sendMessage({ message: 'logout' },
     function (response) {
