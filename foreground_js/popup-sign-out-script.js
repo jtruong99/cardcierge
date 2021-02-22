@@ -65,7 +65,7 @@ sign_out.addEventListener('click', () => {
 
 fill_button.addEventListener('click', () => {
     console.log("clicked fill");
-    
+
     var category = select.options[select.selectedIndex].text;
     if (category === "Choose a category:") {
         alert("Please select a category to use autofill!");
@@ -91,7 +91,7 @@ fill_button.addEventListener('click', () => {
                 chrome.tabs.executeScript({
                     code: 'var optimalCard = ' + JSON.stringify(resJson)
                 }, function () {
-                    chrome.tabs.executeScript({ file: '/background_js/autofill.js' });
+                    chrome.tabs.executeScript({ file: '/scripts/autofill.js' });
                 });
 
                 alert("Here is the optimal card we chose: \nCard #: " +
