@@ -1,7 +1,7 @@
 {
   "name": "Cardcierge: A Credit Card Picker",
   "description": "An extension that picks the optimal credit card to maximize rewards for online purchases",
-  "version": "1.0",
+  "version": "1.1",
   "manifest_version": 2,
   "permissions": [
     "storage",

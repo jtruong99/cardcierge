@@ -15,6 +15,10 @@ div {
     align-items: center;
 }
 
+form {
+    height: 10%;
+}
+
 button {
     background-color: #918d97;
     padding: 9px;
