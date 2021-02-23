@@ -6,10 +6,10 @@ function fill_info() {
     // optimal card has the following keys: id, owner, card_number, expiration, security_code, card_type
 
     // TODO - look at more websites and modify these regexes 
-    let cc_re = new RegExp('(.*cc.*)|(.*credit.*)|(.*card.*)|(.*num.*)');
+    let cc_re = new RegExp('(.*cc.*)|(.*credit.*)|(.*card.*)');
     let exp_mm_re = new RegExp('(.*mm.*)|(.*month.*)|(.*MM.*)');
     let exp_yy_re = new RegExp('(.*yy.*)|(.*year.*)|(.*YY.*)');
-    let cvv_re = new RegExp('.*cvv.*');
+    let cvv_re = new RegExp('(.*cvv.*)|(.*security.*)|(.*code.*)');
 
     /* here we are assuming that the cc fields are stored in a form
     this is true in most cases
