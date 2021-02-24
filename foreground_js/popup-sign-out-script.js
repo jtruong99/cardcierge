@@ -100,6 +100,26 @@ fill_button.addEventListener('click', () => {
                     resJson.expiration + 
                     "\nCVV: " + 
                     resJson.security_code);
+
+                var message = "Here is the optimal card we chose: \nCard #: " +
+                    resJson.card_number +
+                    "\nExpiration: " + 
+                    resJson.expiration + 
+                    "\nCVV: " + 
+                    resJson.security_code;
+
+                chrome.windows.create({
+                    url: '/html/display-card-info.html',
+                    width: 450,
+                    height: 125,
+                    type: "popup",
+                    focused: true,
+                    top: 400,
+                    left: 400
+                });
+                    
+                chrome.storage.local.set({ "optimal_cc": message});
+
             })
             .catch(err => console.log(err));
     });
