@@ -15,9 +15,13 @@ div {
     align-items: center;
 }
 
+form {
+    height: 10%;
+}
+
 button {
     background-color: #918d97;
-    padding: 9px;
+    padding: 5px;
     align-items: center;
 }
 
@@ -25,12 +29,20 @@ span {
     font-family: monospace;
     font-weight: bold;
     color: white;
-    font-size: 50px;
+    font-size: 40px;
     text-shadow: 0px 0px 5px black;
     transition-duration: 0.3s;
 }
 
 #name {
-    font-size: 50px;
+    font-size: 40px;
     max-width: 100%;
+}
+
+#sign_out {
+    position: fixed;
+    background-color: #e5eb9e;
+    bottom: 5px;
+    left: 5px;
+    padding: 2px;
 }
