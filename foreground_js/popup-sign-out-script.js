@@ -94,13 +94,6 @@ fill_button.addEventListener('click', () => {
                     chrome.tabs.executeScript({ file: '/scripts/autofill.js' });
                 });
 
-                alert("Here is the optimal card we chose: \nCard #: " +
-                    resJson.card_number +
-                    "\nExpiration: " + 
-                    resJson.expiration + 
-                    "\nCVV: " + 
-                    resJson.security_code);
-
                 var message = "Here is the optimal card we chose: \nCard #: " +
                     resJson.card_number +
                     "\nExpiration: " + 
@@ -108,6 +101,9 @@ fill_button.addEventListener('click', () => {
                     "\nCVV: " + 
                     resJson.security_code;
 
+                // TODO - add styling to /html/display-card-info.html
+                // TODO - maybe also add close button?
+                // This is actually sort of awkward - I personally like the alert better since its cleaner
                 chrome.windows.create({
                     url: '/html/display-card-info.html',
                     width: 450,
@@ -117,7 +113,8 @@ fill_button.addEventListener('click', () => {
                     top: 400,
                     left: 400
                 });
-                    
+                
+                // TODO - check to see if this is a security issue
                 chrome.storage.local.set({ "optimal_cc": message});
 
             })
