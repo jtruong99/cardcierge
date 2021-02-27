@@ -1,16 +1,17 @@
 /* Use these for custom css for page */
-/* Use these for custom css for page */
 body {
     background-color: #ffffff;
-    height: 500px;
-    width: 500px;
+    width: 350;
+    height: 400;
+}
+
+button {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 200%;
 }
 
 input {
-    font-family: monospace;
-}
-
-select {
     font-family: monospace;
 }
 
@@ -18,4 +19,8 @@ button {
     font-family: monospace;
     font-weight: bold;
     font-size: 200%;
+}
+
+.input-group-text {
+    font-family: monospace;
 }

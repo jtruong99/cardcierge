@@ -4,12 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/styling/base.css">
-    <script src="/foreground_js/display-card-script.js"></script>
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css"> 
+    <link rel="stylesheet" type="text/css" href="/styling/display-card-info.css">
+
+
     <title>Cardcierge - Selected Card</title>
 </head>
 
 <body>
-    <p id="msg"></p>
+
+    <h1 class="text-center py-3"> Optimal Card </h1>
+
+    <div class="card card-block mx-3 px-3 py-2" style="min-width: 300px;">
+        
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Type </span>
+            </div>
+            <input id="c_type" readonly type="text" class="form-control">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Num. </span>
+            </div>
+            <input id="c_number" readonly type="text" class="form-control">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Code </span>
+            </div>
+            <input id="c_code" readonly type="text" class="form-control">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            <span class="input-group-text"> Expir. </span>
+            </div>
+            <input id="c_expir" readonly type="text" class="form-control">
+        </div>
+
+    </div>
+
+    <div class="text-center py-3"> 
+        <button class="btn-lg btn btn-outline-danger" id="exit_window" type="button"> Exit </button>
+    </div>
+
+    <script src="/foreground_js/display-card-script.js"></script>
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"> </script>
 </body>
 </html>
