@@ -1,10 +1,29 @@
 /* Use these for custom css for page */
 body {
     background-color: #f7f7f7;
-    min-height: 600px;
-    min-width: 600px;
+    height: 500px;
+    width: 500px;
 }
 
 .card-block {
     min-height: 300px;
+}
+
+
+input {
+    font-family: monospace;
+}
+
+select {
+    font-family: monospace;
+}
+
+button {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 200%;
+}
+
+.input-group-text {
+    font-family: monospace;
 }

@@ -5,32 +5,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="stylesheet" type="text/css" href="/styling/base.css">
-    <!-- <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">  -->
+    <!-- <link rel="stylesheet" type="text/css" href="/styling/base.css"> -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css"> 
     <link rel="stylesheet" type="text/css" href="/styling/popup-sign-out.css">
     <title>Welcome to Cardcierge</title>
 
 </head>
 
 <body>
-    <div>
-        <span id="message">Welcome back,</span><span id="name"></span>
-        <p>Here are your current credit cards:</p>
-        <p>TODO: add credit cards here.</p>
-        <button id="mangage_card" type="button"> Manage Credit Cards</button>
-        <br></br>
-        <form id="categoryForm">
-            <select id="selectCategory">
-                <option selected disabled>Choose a category:</option>
-            </select>
-        </form>
-        <br></br>
-        <button id="autofill" type="button">Autofill my Credit Card Information</button>
-        <br></br>
-        <button id="sign_out" type="button">Sign Out</button>
-    </div>
+
+        <h1 class="text-center  py-3" id="name" > </h1>
+
+        <div  class="text-center  py-3"> 
+            <button class="btn-lg btn btn-outline-primary" id="mangage_card" type="button"> Manage Credit Cards</button>
+        </div>
+
+
+        <h2 class="text-center py-3"> Autofill Credit Card Info </h2>
+
+        <div class="row text-center justify-content-center">
+            <div class="col-12">
+                <form>
+                    <div class="input-group">
+                        <select class="mx-auto" style="width: 250px; height: 40px;" id="selectCategory" >
+                            <option id="default_option" selected disabled> Please Choose Category! </option>
+                        </select>
+                  
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div  class="text-center  py-3"> 
+            <button class="btn-lg btn btn-outline-success" id="autofill" type="button" >Autofill</button>
+        </div>
+
+        <div  class="text-center  py-3"> 
+            <button class="btn-sm btn btn-outline-dark" id="sign_out" type="button">Sign Out</button>
+        </div>
+
+    <script src="/library_js/lib.js"> </script>
     <script src="/foreground_js/popup-sign-out-script.js"></script>
-    <!-- <script src="/bootstrap/js/bootstrap.bundle.min.js"> </script> -->
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"> </script>
 </body>
 
 </html>

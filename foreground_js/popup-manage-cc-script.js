@@ -4,32 +4,36 @@ var credit_card_types;
 var user_credit_cards;
 
 
+function init(){
 
-// button logic
-back_button.addEventListener('click', () => {
-    chrome.browserAction.setPopup({
-        popup: '/html/popup-sign-out.html'
-    });
-    window.location.replace('/html/popup-sign-out.html');  
-});
+    //only show button once data is loaded!
+    back_button.setAttribute("hidden",true);
 
-// Retrive credit cards 
-chrome.runtime.sendMessage({ message: 'getCreditCards' },
-    function (response) {
-        if (response.message === 'success') {
-            credit_card_types = response.cc_types;
-            user_credit_cards = response.user_cc;
-            populate_create_form().then(res => {
-                populate_table();
+    //Get Credit Card Info 
+    makeApiCall("creditcards/","GET",null).then(cc_user => {
+            makeApiCall("credit_types/","GET",null).then(cc_types => {
+                if (cc_user === false || cc_types === false){
+                    alert("Something Went Wrong")
+                }else{
+                    credit_card_types = cc_types;
+                    user_credit_cards = cc_user;
+                    populate_create_form().then(res => {
+                        populate_table().then(res => {
+                            //now show it!
+                            back_button.removeAttribute("hidden");
+                        });
+                    });
+                }
             });
+    })
+    .catch(err => console.log(err));
 
-        }else{ 
-            alert("Something Went Wrong");
-        }
-    }
-);
+}
+
+init() 
 
 //////////////////////////////////////////////////////////////////
+
 
 function htmlToElement(html) {
     // https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro
@@ -66,27 +70,48 @@ function serialize_form(form_id){
 
 //////////////////////////////////////////////////////////////////
 
-function send_cc_message(message_type, props){
-    form_data = serialize_form(props["form_id"]);
-    chrome.runtime.sendMessage({ 
-            message: message_type,
-            payload: form_data, 
-        },
-        function (response) {
-            if (response.message === 'success') {
-                alert("Success!");
-                // refresh current page
-                chrome.browserAction.setPopup({
-                    popup: '/html/popup-manage-cc.html'
-                });
-                window.location.replace('/html/popup-manage-cc.html');  
+//back button logic 
+back_button.addEventListener('click', () => {
+    chrome.browserAction.setPopup({
+        popup: '/html/popup-sign-out.html'
+    });
+    window.location.replace('/html/popup-sign-out.html');  
+});
 
-            }else{ 
-                alert("Bad Inputs!");
-            }
+function handle_button_pressed(button_type, props){
+    var form_data = serialize_form(props["form_id"]);
+    var card_id = form_data["card_id"]
+    delete form_data["card_id"]
+
+    var REQ_TYPE; 
+    var URL; 
+
+    if (button_type === "Create"){
+        REQ_TYPE = "POST"
+        URL = "creditcards/"
+    }else if(button_type === "Update"){
+        REQ_TYPE = "PATCH"
+        URL = `creditcards/${card_id}/`
+    }else if(button_type === "Delete"){
+        REQ_TYPE = "DELETE"
+        URL = `creditcards/${card_id}/`
+    }
+
+    makeApiCall(URL,REQ_TYPE,form_data).then(results => {
+        if (results === false){
+            alert("Bad Inputs!")
+        }else{                
+            alert("Success!");
+            chrome.browserAction.setPopup({
+                popup: '/html/popup-manage-cc.html'
+            });
+            window.location.replace('/html/popup-manage-cc.html'); 
+
         }
-    );    
+    });
 }
+
+//////////////////////////////////////////////////////////////////
 
 
 function populate_create_form(){
@@ -138,7 +163,7 @@ function populate_create_form(){
 
         //create button
         create_button.addEventListener('click', function() {
-            send_cc_message("CreateCreditCard", props);
+            handle_button_pressed("Create", props);
         });
 
     });
@@ -147,7 +172,7 @@ function populate_create_form(){
 }
 
 function populate_table(){
-    fetch('/templates/cc_view.html')
+    return fetch('/templates/cc_view.html')
     .then(response => response.text())
     .then(text => {
         cards_div = document.getElementById("cards_showcase");
@@ -205,14 +230,15 @@ function populate_table(){
 
                 //save button 
                 save_button.addEventListener('click', function() {
-                    send_cc_message("UpdateCreditCard", props);
+                    handle_button_pressed("Update", props);
                 });
 
                 //delete button
                 delete_button.addEventListener('click', function() {  
-                    send_cc_message("DeleteCreditCard", props);
+                    handle_button_pressed("Delete", props);
                 });
             
         }
     })
 }
+
