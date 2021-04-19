@@ -1,33 +1,53 @@
 var back_button = document.getElementById("back")
+var toggle_server = document.getElementById("toggle_server")
 const original_button_color = back_button.style.backgroundColor;
 var credit_card_types; 
 var user_credit_cards;
-
+var signup_bonuses; 
 
 function init(){
 
-    //only show button once data is loaded!
-    back_button.setAttribute("hidden",true);
+
+    //set the state of toggle 
+    chrome.storage.local.get('store_local', function(result) {
+        toggle_server.checked = result.store_local
+    })
 
     //Get Credit Card Info 
-    makeApiCall("creditcards/","GET",null).then(cc_user => {
-            makeApiCall("credit_types/","GET",null).then(cc_types => {
-                if (cc_user === false || cc_types === false){
-                    alert("Something Went Wrong")
-                }else{
-                    credit_card_types = cc_types;
-                    user_credit_cards = cc_user;
-                    populate_create_form().then(res => {
-                        populate_table().then(res => {
-                            //now show it!
-                            back_button.removeAttribute("hidden");
-                        });
-                    });
-                }
-            });
-    })
-    .catch(err => console.log(err));
+    getData("creditcards/","GET",null).then(cc_user => {
+        if (!(cc_user === false || cc_user === "invalid-token")){
+            getData("credit_types/","GET",null).then(cc_types => {
+                    if (!(cc_types === false || cc_types === "invalid-token")){
+                        getData("subs/","GET",null).then(sign_up => {
+                            if(!(sign_up === false || sign_up === "invalid-token")){
+                                credit_card_types = cc_types;
+                                user_credit_cards = cc_user;
+                                signup_bonuses = sign_up
+                                populate_create_form().then(res => {
+                                    populate_table().then(res => {
+                                        populate_create_bonus_form().then(res => {
+                                            chrome.storage.local.get('store_local', function(result) {
+                                                if (result.store_local === false){
+                                                    populate_bonus_table().then(res => {
+                                                        back_button.removeAttribute("hidden");
+                                                    })
+                                                }else{
+                                                    back_button.removeAttribute("hidden");
+                                                }
+                                            })
+                                        })
 
+                                    })
+                                })
+                            }
+
+                        });
+                        
+                    }
+                })
+        }
+
+    });
 }
 
 init() 
@@ -70,6 +90,39 @@ function serialize_form(form_id){
 
 //////////////////////////////////////////////////////////////////
 
+//toggle server logic 
+
+function refresh_page(){
+    chrome.browserAction.setPopup({
+        popup: '/html/popup-manage-cc.html'
+    });
+    window.location.replace('/html/popup-manage-cc.html'); 
+}
+
+toggle_server.addEventListener('click', () => {
+    if (toggle_server.checked){
+        chrome.storage.local.set({'store_local': true}, function () {
+            getData("flipuserstorage", "POST", {}).then(res => {
+                if (!(res === false || res === "invalid-token")){
+                    copy_server_local(res).then(sucess => {
+                        refresh_page()
+                    })
+                }
+            })
+        })
+    }else{
+        chrome.storage.local.set({'store_local': false}, function () {
+            getData("flipuserstorage", "POST", {}).then(res => {
+                if (!(res === false || res === "invalid-token")){
+                    clear_local_data().then(success => {
+                        refresh_page()
+                    })
+                }
+            })
+        })
+    }
+})
+
 //back button logic 
 back_button.addEventListener('click', () => {
     chrome.browserAction.setPopup({
@@ -97,22 +150,233 @@ function handle_button_pressed(button_type, props){
         URL = `creditcards/${card_id}/`
     }
 
-    makeApiCall(URL,REQ_TYPE,form_data).then(results => {
-        if (results === false){
-            alert("Bad Inputs!")
-        }else{                
+    getData(URL,REQ_TYPE,form_data).then(res => {
+        if (!(res === false || res === "invalid-token")){      
             alert("Success!");
-            chrome.browserAction.setPopup({
-                popup: '/html/popup-manage-cc.html'
-            });
-            window.location.replace('/html/popup-manage-cc.html'); 
-
+            refresh_page()
         }
     });
 }
 
+function handle_bonus_pressed(button_type, props){
+
+
+    chrome.storage.local.get('store_local', function(result) {
+
+        if(result.store_local === false){
+
+            var form_data = serialize_form(props["form_id"]);
+            var card_id = user_credit_cards[form_data["card_id"]].id //its an index remember!
+            delete form_data["card_id"]
+            REQ_TYPE = "PATCH"
+            URL = `creditcards/${card_id}/`
+            send_data = {}
+            if (button_type === "CREATE"){
+                send_data = form_data
+            }else if(button_type === "DELETE"){  
+                send_data["welcome_offer"] = ""
+                send_data["open_date"] = "" 
+            }
+        
+            getData(URL,REQ_TYPE,send_data).then(res => {
+                if (!(res === false || res === "invalid-token")){      
+                    alert("Success!");
+                    refresh_page()
+                }
+            });
+
+        }else{
+
+            alert("Unfortunately this feature only works if information is not stored locally. Please update your settings!")
+
+        }
+
+    })
+
+}
+
+function get_card_type_info_from_id(id){
+    for (var j = 0; j < credit_card_types.length; j++){
+        if (credit_card_types[j].id.toString() === id.toString()){
+            return credit_card_types[j];
+        }
+    }
+}
+
+function clear_options(select){
+    var length = select.options.length;
+    for (var i = length-1; i >= 0; i--) {
+        select.options[i] = null;
+    }
+}
+
+function filter_bonus_by_card_type(card_type){
+    bonus_list = [] 
+    for (var j = 0; j < signup_bonuses.length; j++){
+        sub = signup_bonuses[j]
+        if(sub.card_type.toString() === card_type.toString()){
+            bonus_list.push(signup_bonuses[j])
+        }
+    }
+    return bonus_list
+}
+
+function get_bonus_by_id(id){
+    for (var j = 0; j < signup_bonuses.length; j++){
+        sub = signup_bonuses[j]
+        if(sub.id.toString() === id.toString()){
+            return sub 
+        }
+    }
+}
 //////////////////////////////////////////////////////////////////
 
+function populate_create_bonus_form(){
+    return fetch('/templates/bonus_view.html')
+
+    .then(response => response.text())
+    .then(text => {
+        bonus_div = document.getElementById("welcome_offer_showcase");
+        let i = -1;
+        let props = {
+            form_id: `${i}_bonus_form`,
+            input_field_class: `${i}_bonus_input`,
+            cc_id_field: `${i}_bonus_cc_id`,
+            welcome_id_field:`${i}_bonus_welcome_id`,
+            open_date: "",
+            but_del: `${i}_bonus_bdel`,
+            but_create: `${i}_bonus_bcreate`,
+        };
+        template_js = template_str(text, props);
+        new_card = htmlToElement(template_js);
+        bonus_div.appendChild(new_card); 
+
+        //select field 1
+        select_user_cc = document.getElementById(props["cc_id_field"]);
+        for (var j = 0; j < user_credit_cards.length; j++){
+            
+            var user_cc = user_credit_cards[j]; 
+            var type_info = get_card_type_info_from_id(user_cc.card_type)
+            var card_number_str = user_cc.card_number.toString()
+            var last_4 = card_number_str.substr(card_number_str.length - 4)
+
+            var option = document.createElement("option");
+            option.text = type_info.name + ", ending in " + last_4;
+            option.value = j; //store index ins user_credit_cards 
+            select_user_cc.add(option);
+        }
+
+        //select field 2
+        select_bonus = document.getElementById(props["welcome_id_field"]);
+
+        select_user_cc.addEventListener("change",function() {
+            clear_options(select_bonus)
+            var user_cc =  user_credit_cards[select_user_cc.value]
+            let filter_list_of_bonus = filter_bonus_by_card_type(user_cc.card_type)
+
+            for (var j = 0; j < filter_list_of_bonus.length; j++){
+                var sign_up = filter_list_of_bonus[j]; 
+                var option = document.createElement("option");
+                option.text = "Spend " + sign_up.spend_amount + ", get " + sign_up.bonus_amount;
+                option.value = sign_up.id;
+                select_bonus.add(option);
+            }
+        }); 
+        
+        //manual buttons
+        let del_button = document.getElementById(props["but_del"]);
+        del_button.setAttribute("hidden",true);
+        let create_button = document.getElementById(props["but_create"]);
+        create_button.removeAttribute("hidden");
+
+        //set active
+        input_fields = document.getElementsByClassName(props["input_field_class"])
+        for(var j = 0; j < input_fields.length; j++){
+            input_fields[j].removeAttribute("readonly");
+            input_fields[j].removeAttribute("disabled");
+        }
+
+        //create button
+        create_button.addEventListener('click', function() {
+            handle_bonus_pressed("CREATE", props);
+        });
+
+    })
+}
+
+function populate_bonus_table(){
+
+    return fetch('/templates/bonus_view.html')
+    .then(response => response.text())
+    .then(text => {
+        bonus_div = document.getElementById("welcome_offer_showcase");
+
+        for (var j = 0; j < user_credit_cards.length; j++){
+            let cc = user_credit_cards[j]
+            if (cc.welcome_offer != null){
+
+                console.log("Woohoo offer")
+                let props = {
+                    form_id: `${j}_bonus_form`,
+                    input_field_class: `${j}_bonus_input`,
+                    cc_id_field: `${j}_bonus_cc_id`,
+                    welcome_id_field:`${j}_bonus_welcome_id`,
+                    open_date: cc.open_date,
+                    but_del: `${j}_bonus_bdel`,
+                    but_create: `${j}_bonus_bcreate`,
+                };
+                template_js = template_str(text, props);
+                new_card = htmlToElement(template_js);
+                bonus_div.appendChild(new_card);  
+
+                select_user_cc = document.getElementById(props["cc_id_field"]);
+
+                //set card info 
+                var type_info = get_card_type_info_from_id(cc.card_type)
+                var card_number_str = cc.card_number.toString()
+                var last_4 = card_number_str.substr(card_number_str.length - 4)
+
+                var option = document.createElement("option");
+                option.text = type_info.name + ", ending in " + last_4;
+                option.value = j; //store index in user_credit_cards 
+                select_user_cc.add(option);
+                select_user_cc.value = j 
+
+                //set bonus info 
+                select_bonus = document.getElementById(props["welcome_id_field"]);
+
+                var sign_up = get_bonus_by_id(cc.welcome_offer); 
+                var option = document.createElement("option");
+                option.text = "Spend " + sign_up.spend_amount + ", get " + sign_up.bonus_amount;
+                option.value = sign_up.id;
+                select_bonus.add(option);
+                
+                select_bonus.value = cc.welcome_offer
+
+                //manual buttons
+                let del_button = document.getElementById(props["but_del"]);
+                del_button.removeAttribute("hidden");
+                let create_button = document.getElementById(props["but_create"]);
+                create_button.setAttribute("hidden",true);
+
+                //delete button
+                del_button.addEventListener('click', function() {
+                    handle_bonus_pressed("DELETE", props);
+                });
+
+
+
+
+
+            }
+ 
+
+
+        }
+
+        
+    })
+}
 
 function populate_create_form(){
 

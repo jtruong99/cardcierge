@@ -5,8 +5,10 @@
             <div class="input-group-prepend">
             <span class="input-group-text">  Type </span>
             </div>
-            <!-- TODO make this a title and toggle it -->
-            <select disabled id="${cc_type_field}" name="card_type" class="custom-select ${input_field_class}">
+
+            <select disabled id="${cc_type_field}" name="card_type" class="form-control ${input_field_class}">
+            <option hidden disabled selected value> -- select an option -- </option>
+
             </select>
         </div>
 
@@ -16,19 +18,19 @@
             <div class="input-group-prepend">
             <span class="input-group-text"> Num. </span>
             </div>
-            <input readonly value="${card_num}" name="card_number" type="text" class="form-control ${input_field_class}">
+            <input readonly value="${card_num}" name="card_number" type="text" class="w-70 form-control ${input_field_class}">
         </div>
         <div class="input-group mb-3">
             <div class="input-group-prepend">
             <span class="input-group-text"> Code </span>
             </div>
-            <input readonly value="${card_code}" name="security_code" type="text" class="form-control ${input_field_class}">
+            <input readonly value="${card_code}" name="security_code" type="text" class="w-70 form-control ${input_field_class}">
         </div>
         <div class="input-group mb-3">
             <div class="input-group-prepend">
             <span class="input-group-text"> Expir. </span>
             </div>
-            <input readonly value="${expir}" name="expiration" type="text" class="form-control ${input_field_class}">
+            <input readonly value="${expir}" name="expiration" type="text" class="w-70 form-control ${input_field_class}">
         </div>
 
     </form>
