@@ -11,20 +11,39 @@
 </head>
 
 <body>
+  
   <h1 class="text-center  py-3"> Manage Cards</h1>
 
   
     <div id="cards_showcase" class="d-flex flex-row flex-nowrap overflow-auto">
    </div>
 
-   <div class="text-center  py-3">
-      <button id="back" type="button" class="btn-lg btn btn-outline-dark"> Back </button>
-   </div>
-  
+   <h1 class="text-center  py-3"> Welcome Offers</h1>
 
+   <div id="welcome_offer_showcase" class="d-flex flex-row flex-nowrap overflow-auto">
+  </div>
+
+
+   
+   <h1 class="text-center  py-3"> Card Settings </h1>
+
+   <div class="form-check form-switch">
+    <input id="toggle_server" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+    <label class="form-check-label" for="flexSwitchCheckDefault"> Store Credit Card Information Locally </label>
+    <button for="flexSwitchCheckDefault" diabled type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="By default, your credit card information is encrypted and stored securely on our servers. If you would like to store your information on your computer ONLY please enable the option. Please note credit cards you save on this device will not be available if you log in to cardcierge on another device." >
+      ?
+    </button>
+  </div>
+
+  <div class="text-center  py-3">
+    <button id="back" type="button" class="btn-lg btn btn-outline-dark"> Back </button>
+ </div>
+ 
     <script src="/library_js/lib.js"> </script>
     <script src="/foreground_js/popup-manage-cc-script.js"></script>
     <script src="/bootstrap/js/bootstrap.bundle.min.js"> </script>
+    <script src="/crypto_js/rollups/aes.js"> </script>
+
 </body>
 
 </html>

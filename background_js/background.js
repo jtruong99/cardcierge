@@ -7,9 +7,19 @@ console.log("Hello from the background page!");
 
 // base url for heroku 
 let base_url = "https://cardcierge.herokuapp.com/";
+// let base_url = "http://127.0.0.1:8000/";
+
+
 
 // tells us whether the user is currently signed in
 let user_signed_in = false; 
+
+
+//set the default value of cc_array
+//each user hashes to a different place in this local storage array 
+//depending on their uuid
+//since info is hashed no user can access other users info!
+chrome.storage.local.set({'user_credit_cards': {}})
 
 /* this gets run as soon as the extension is loaded
 we care to see if the user is signed in, and if so set the 
@@ -122,11 +132,35 @@ function flip_user_status(signIn, user_info) {
           else { // this should be success
             // try to store token 
             console.log("userinfo", user_info);
-            chrome.storage.local.set({ "auth_token": resJson["token"], "email": user_info["username"] }, function (response) {
+            chrome.storage.local.set({ "auth_token": resJson["token"], "email": user_info["username"] }, function () {
               if (chrome.runtime.lastError) resolve('fail');
-              user_signed_in = true;
-              console.log("From the background - sign in attempt success, stored token and email");
-              resolve('success');
+              
+              //get the user settings
+              fetch(`${base_url}getusersettings`, {
+                  method: "GET",
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                      'Authorization': 'Token '+resJson["token"],
+                  },
+              })
+              .then(res => {
+                  if (res.status == 200){
+                    res.json().then(data => {
+                      user_signed_in = true;
+                      chrome.storage.local.set({ "encryption_key": data["settings"]["key"], "store_local": data["settings"]["store_local"], "uid": data["settings"]["user"] }, function () {
+                        console.log("From the background - sign in attempt success, stored userinfo");
+                        resolve('success');
+                      })
+                    })
+                  }
+                  else{
+                    resolve('fail'); 
+                  }
+              })
+              
+              // user_signed_in = true;
+              // console.log("From the background - sign in attempt success, stored token and email");
+              // resolve('success');
             });
           }
         })
@@ -136,7 +170,7 @@ function flip_user_status(signIn, user_info) {
   else if (!signIn) {
     // sign the user out here - we just clear the memory, but this probably should be an API call to logout
     return new Promise(resolve => {
-      chrome.storage.local.remove(['auth_token', 'email'], function (response) {
+      chrome.storage.local.remove(['auth_token', 'email', 'store_local', 'encryption_key', 'uid'], function (response) {
         if (chrome.runtime.lastError) {
           console.log("From the background - sign out failed");
           resolve('fail');
