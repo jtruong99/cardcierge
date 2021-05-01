@@ -9,7 +9,6 @@
     "tabs",
     "windows", 
     "https://*/"
-    // "<all_urls>" 
   ],
   "icons": {
     "16": "/images/get_started16.png", // need to change these to our own icon 
@@ -19,7 +18,9 @@
   },
   "background": {
     "scripts": [
-      "/background_js/background.js"
+      "/library_js/lib.js",
+      "/background_js/background.js",
+      "/crypto_js/rollups/aes.js"
     ]
   },
   

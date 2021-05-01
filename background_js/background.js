@@ -6,7 +6,7 @@ and runs in the background, listing for events (such as click on extension) */
 console.log("Hello from the background page!");
 
 // base url for heroku 
-let base_url = "https://cardcierge.herokuapp.com/";
+// let base_url = "https://cardcierge.herokuapp.com/";
 // let base_url = "http://127.0.0.1:8000/";
 
 
@@ -14,12 +14,17 @@ let base_url = "https://cardcierge.herokuapp.com/";
 // tells us whether the user is currently signed in
 let user_signed_in = false; 
 
-
 //set the default value of cc_array
 //each user hashes to a different place in this local storage array 
 //depending on their uuid
 //since info is hashed no user can access other users info!
-chrome.storage.local.set({'user_credit_cards': {}})
+chrome.storage.local.get(['user_credit_cards'], function (result) {
+  if (!result.user_credit_cards){
+    chrome.storage.local.set({'user_credit_cards': {}})
+}});
+
+//clear memory on refresh! 
+chrome.storage.local.remove(['auth_token', 'email', 'store_local', 'encryption_key', 'uid'])
 
 /* this gets run as soon as the extension is loaded
 we care to see if the user is signed in, and if so set the 
@@ -170,7 +175,7 @@ function flip_user_status(signIn, user_info) {
   else if (!signIn) {
     // sign the user out here - we just clear the memory, but this probably should be an API call to logout
     return new Promise(resolve => {
-      chrome.storage.local.remove(['auth_token', 'email', 'store_local', 'encryption_key', 'uid'], function (response) {
+      chrome.storage.local.remove(['auth_token', 'email', 'store_local', 'encryption_key', 'uid', 'autofill_tabid','page_tab'], function (response) {
         if (chrome.runtime.lastError) {
           console.log("From the background - sign out failed");
           resolve('fail');
@@ -226,3 +231,63 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 });
+
+
+///////
+/////// BACKGROUND LISTERNERS ///////
+///////
+
+function handle_page_changed(tab_url, tab_id){
+
+  //check to make sure the tab_url isn't the chrome extension
+  //check to see if purhasing url how to do?!?!?
+  //look for chekcout, payment, 
+  let purchase = new RegExp('(.*purchase.*)|(.*payment.*)');
+  let extension = new RegExp('.*chrome-extension.*');
+
+  if (tab_url && tab_url.match(extension) === null){
+
+    chrome.storage.local.set({'page_url': tab_url}, function (){
+
+        if (tab_url.match(purchase) !== null){
+          if (window.confirm('Making a purchase? Autofill?'))
+            {
+
+              chrome.storage.local.set({'autofill_tabid': tab_id}, function (){
+
+                getData("infercategory","POST",{url:tab_url}, true).then(resJson => {
+
+
+                    if (resJson === "invalid-token" || resJson.category === "other"){
+                      chrome.windows.create({
+                        url: '/html/popup-sign-in.html',
+                        width: 500,
+                        height: 500,
+                        type: "popup",
+                        focused: true,
+                        top: 0,
+                        left: 0
+                      });
+                    }else{
+                      get_best_card_and_inject(resJson.category) 
+                    }
+                  })
+
+              })
+          }
+        }
+      })
+    }
+}
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  chrome.tabs.get(activeInfo.tabId, function(tab){
+        handle_page_changed(tab.url, tab.id)
+  });
+}); 
+
+chrome.tabs.onUpdated.addListener(function
+  (tabId, changeInfo, tab) {
+      handle_page_changed(changeInfo.url, tabId)
+  }
+);

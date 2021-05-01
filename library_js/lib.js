@@ -2,6 +2,7 @@
 
 let base_url = "https://cardcierge.herokuapp.com/";
 // let base_url = "http://127.0.0.1:8000/";
+
 let encrypt_field_list = ["security_code", "expiration", "card_number"]
 
 function convert_payload(payload){
@@ -36,7 +37,6 @@ function decrypt_credit_card (cc, key) {
 
 function copy_server_local(res){
     return new Promise(function(resolve, reject) {
-        console.log(res)
         chrome.storage.local.get(['user_credit_cards', 'uid', 'encryption_key'], function (result) {
             result.user_credit_cards[result.uid] = [] 
             for (var i = 0; i < res.length; i++){
@@ -67,7 +67,7 @@ function clear_local_data(){
 }
 
 
-function getData(endpoint, request_type, data){
+function getData(endpoint, request_type, data, from_bg=false){
     //need special behavior for the following routes if the user 
     //does not want us to store their information at our servers 
 
@@ -213,7 +213,7 @@ function getData(endpoint, request_type, data){
     }
 
         
-    return _makeApiCall(endpoint, request_type, data)
+    return _makeApiCall(endpoint, request_type, data, from_bg)
     
 
 
@@ -233,7 +233,7 @@ function sign_out_user(){
 }
 
 
-function _makeApiCall(endpoint, request_type, data){
+function _makeApiCall(endpoint, request_type, data, from_bg){
 
     return new Promise(function(resolve, reject) {
         var body_data = convert_payload(data)
@@ -255,7 +255,9 @@ function _makeApiCall(endpoint, request_type, data){
                 if (res.status === 401){
                     //bad token redirect them! 
                     alert("Your session expired! Please sign-in again.")
-                    sign_out_user() 
+                    if (from_bg === false){
+                        sign_out_user() 
+                    }
                     resolve("invalid-token")
                 }
                 else if (res.status >= 300){
@@ -277,4 +279,61 @@ function _makeApiCall(endpoint, request_type, data){
         });
 
     });
+}
+
+function get_best_card_and_inject(category_val){
+
+    getData("getbestcard","POST",{category:category_val}).then(resJson => {
+
+        if (!(resJson === false || resJson === "invalid-token")){
+
+            getData("credit_types/","GET",null).then(cc_types => {
+
+                if (!(cc_types === false || cc_types === "invalid-token")){ 
+                                        
+
+                    chrome.storage.local.get(['autofill_tabid'], function (result) {
+                        chrome.tabs.executeScript(result.autofill_tabid, {
+                          code: 'var optimalCard = ' + JSON.stringify(resJson)
+                        }, function () {
+                          chrome.tabs.executeScript(result.autofill_tabid, { file: '/scripts/autofill.js' });
+                        });
+                      })
+
+          
+                    for (var i = 0; i < cc_types.length; i++){
+                        var cct = cc_types[i]
+                        if (resJson.card_type.toString() === cct.id.toString()){
+                            card_type_str = cct.issuer +", "+cct.name;
+                            break
+                        }
+                    }
+                   
+                    
+                    var card_info = {
+                        card_number: resJson.card_number, 
+                        expiration: resJson.expiration, 
+                        security_code: resJson.security_code,
+                        card_type_str: card_type_str, 
+                    }
+                    
+                    chrome.windows.create({
+                        url: '/html/display-card-info.html',
+                        width: 350,
+                        height: 400,
+                        type: "popup",
+                        focused: true,
+                        top: 0,
+                        left: 0
+                    });
+                    
+                    // TODO - check to see if this is a security issue
+                    chrome.storage.local.set({ "optimal_cc": card_info});
+                }
+
+            })
+
+        }
+    })
+    .catch(err => console.log(err));
 }
